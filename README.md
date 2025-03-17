@@ -6,9 +6,9 @@ This repository contains all the software artifacts created within the scope of 
 
 This project is divided into three main components:
 
-1.  **Data Collection:** Acquiring accelerometer data from an Arduino sensor during Spikeball gameplay.
-2.  **Model Training:** Training a machine learning model using the collected data.
-3.  **Arduino Firmware:** Utilizing the trained model on an Arduino for real-time hit detection.
+1.  **Data Collection ([README](data_collector/README.md)):** Acquiring accelerometer data from an Arduino sensor during Spikeball gameplay.
+2.  **Model Training ([README](model_training/README.md)) :** Training a machine learning model using the collected data.
+3.  **Arduino Firmware:** Data collection sketch ([README](arduino_firmware/SendAcceleration/README.md)) & utilizing the trained model on an Arduino for real-time hit detection ([README](arduino_firmware/Inference/README.md)).
 
 ## Repository Structure
 

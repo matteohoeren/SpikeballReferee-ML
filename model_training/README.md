@@ -1,4 +1,4 @@
-# What is this repo about?
+# What is this repo about? (README WIP)
 
 This is a python repository to train a machine learning model to predict if the ball hit the rim or net.
 This (hopefully) solves an issue i came across playing spikeball with my friends. There would be some discussions
@@ -6,8 +6,7 @@ about wether it was a faulty hit or not so i decided to build a digital referee 
 
 ## Collecting your own data
 
-You can do so quite easily by utilizing the python program i've already built.
-[Check this out this Repo](https://github.com/matteohoeren/spikeball-record-data)
+You can do so quite easily by utilizing the data_collector python program i've already built.
 
 If you don't want to go through the tedious process of gathering a significant amount of data, you can use mine or extend my data with yours.
 

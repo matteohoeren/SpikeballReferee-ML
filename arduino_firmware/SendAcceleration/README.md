@@ -54,10 +54,9 @@ The sketch includes a short calibration phase at the beginning to establish a ba
 3.  The sketch will print the accelerometer data to the Serial Monitor.
 4.  Use the `data_collector.py` Python script (from the `data_collector` directory) to capture this data and save it to CSV files for model training.
 
-## Important Considerations
+## Notes
 
-- **Baud Rate:** Make sure the baud rate in the Serial Monitor is set to **115200**. This is crucial for proper communication.
-- **Data Collection:** This sketch is designed to be used with a separate data collection script (e.g., `data_collector.py`). It simply outputs the raw data.
+- **Data Collection:** This sketch is designed to be used with a host PC running the data collection script (`data_collector/__main__.py`).
 - **Calibration:** The calibration at startup is basic. For more accurate results, consider running a more thorough calibration routine (as mentioned in the code comments) and updating the `IMU.setAccelOffset` and `IMU.setAccelSlope` values in the `setup()` function.
 
 ## DIY Calibration
