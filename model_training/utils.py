@@ -4,51 +4,55 @@ import numpy as np
 from sklearn.model_selection import train_test_split
 
 # Function to read data from CSV files and create X, Y arrays
+import os
+import pandas as pd
+import numpy as np
+
 def load_data(root_folder):
     X = []
     Y = []
     ignored_files = 0
     problematic_files = []
 
-    for folder_name in os.listdir(root_folder):
-        folder_path = os.path.join(root_folder, folder_name)
-        if os.path.isdir(folder_path):
-            net_folder = os.path.join(folder_path, "net")
-            rim_folder = os.path.join(folder_path, "rim")
-            if os.path.exists(net_folder) and os.path.exists(rim_folder):
-                for category_folder, label in [(net_folder, 1), (rim_folder, 0)]:
-                    for filename in os.listdir(category_folder):
-                        file_path = os.path.join(category_folder, filename)
+    # Process both NET and RIM categories directly in root folder
+    for category_folder, label in [("net", 1), ("rim", 0)]:
+        full_path = os.path.join(root_folder, category_folder)
+        
+        if not os.path.exists(full_path):
+            print(f"Warning: Category folder {category_folder} not found in {root_folder}")
+            continue
 
-                        try:
-                            df = pd.read_csv(file_path, header=None)
+        for filename in os.listdir(full_path):
+            file_path = os.path.join(full_path, filename)
+            
+            try:
+                df = pd.read_csv(file_path, header=None)
 
-                            # Check for unexpected strings in the DataFrame
-                            if not df.applymap(lambda x: isinstance(x, (int, float))).all().all():
-                                problematic_files.append(file_path)
-                                print(f"Problem detected in file: {file_path}")
-                                print(df)
-                                continue
+                # Check for non-numeric values
+                if not df.applymap(lambda x: isinstance(x, (int, float))).all().all():
+                    problematic_files.append(file_path)
+                    print(f"Non-numeric values in file: {file_path}")
+                    continue
 
-                            # Discard CSV files with less than 210 lines
-                            if df.shape[0] < 210:
-                                ignored_files += 1
-                                continue
+                # Handle row count requirements
+                if len(df) < 210:
+                    ignored_files += 1
+                    continue
+                
+                # Truncate if too long
+                df = df.head(210)
+                
+                # Assuming the first column is index, use columns 1:
+                X.append(df.iloc[:, 1:].values)
+                Y.append(label)
 
-                            # Truncate CSV files with more than 210 lines
-                            if df.shape[0] > 210:
-                                df = df.head(210)
+            except Exception as e:
+                print(f"Error processing {file_path}: {str(e)}")
+                problematic_files.append(file_path)
 
-                            X.append(df.iloc[:, 1:].values)
-                            Y.append(label)
-
-                        except Exception as e:
-                            print(f"Error reading file {file_path}: {e}")
-                            problematic_files.append(file_path)
-
-    print("Ignored number of files due to less than 210 datapoints:", ignored_files)
-    print("Total problematic files:", len(problematic_files))
-
+    print(f"Ignored {ignored_files} files with insufficient rows")
+    print(f"Found {len(problematic_files)} problematic files")
+    
     return np.array(X), np.array(Y)
 
 

@@ -1,7 +1,14 @@
 import tensorflow as tf
 import numpy as np
 
-# Define the CNN model
+from tensorflow.keras.utils import plot_model
+
+
+
+VERBOSE_OUTPUT = False
+SAVE_AS_TFLITE = False
+
+
 def create_cnn_model():
     model = tf.keras.Sequential([
         tf.keras.layers.Input(shape=(210, 3)),  # Input shape matches your data
@@ -42,9 +49,23 @@ def evaluate_model(model, X_test, Y_test):
     print("Test Loss:", loss)
     print("Test Accuracy:", accuracy)
 
+def plot_cnn_model(model):
+   plot_model(
+    model,
+    to_file="model_architecture.png",
+    show_shapes=True,
+    show_layer_names=True,
+    dpi=96,
+    rankdir="LR", 
+    expand_nested=False,
+    layer_range=None,
+    show_layer_activations=True
+)
+
 def train_model(X_train, Y_train, X_test, Y_test):
     model = create_cnn_model()
     model.summary()
+    plot_cnn_model(model)
     model.compile(optimizer='adam',
               loss='sparse_categorical_crossentropy',
               metrics=['accuracy'])
@@ -76,22 +97,27 @@ def train_model(X_train, Y_train, X_test, Y_test):
         if predicted_label == true_label:
             correct_pred += 1
             if predicted_label == 0:
-               print(f"[{true_label}]Sample {sample_num} is correctly predicted as RIM with {confidence}% confidence")
+               if(VERBOSE_OUTPUT):
+                print(f"[{true_label}]Sample {sample_num} is correctly predicted as RIM with {confidence}% confidence")
             else:
-               print(f"[{true_label}]Sample {sample_num} is correctly predicted as NET with {confidence}% confidence")
+               if(VERBOSE_OUTPUT):
+                print(f"[{true_label}]Sample {sample_num} is correctly predicted as NET with {confidence}% confidence")
         else:
             incorrect_pred += 1
             if predicted_label == 0:
-               print(f"[{true_label}]Sample {sample_num} is incorrectly predicted as RIM with {confidence}% confidence")
+               if(VERBOSE_OUTPUT):
+                  print(f"[{true_label}]Sample {sample_num} is incorrectly predicted as RIM with {confidence}% confidence")
             else:
-               print(f"[{true_label}]Sample {sample_num} is incorrectly predicted as NET with {confidence}% confidence")
+               if(VERBOSE_OUTPUT):
+                print(f"[{true_label}]Sample {sample_num} is incorrectly predicted as NET with {confidence}% confidence")
     print(f"Correctly predicted samples: {correct_pred/len(X_test)*100}% of sample size: {len(X_test)}")       
 
     
     evaluate_model(model, X_test, Y_test)
 
-    converter = tf.lite.TFLiteConverter.from_keras_model(model)
-    tflite_model = converter.convert()
-    with open('spikeball.tflite', 'wb') as f:
-        f.write(tflite_model)
+    if SAVE_AS_TFLITE:
+        converter = tf.lite.TFLiteConverter.from_keras_model(model)
+        tflite_model = converter.convert()
+        with open('spikeball.tflite', 'wb') as f:
+            f.write(tflite_model)
 
