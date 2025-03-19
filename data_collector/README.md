@@ -2,6 +2,10 @@
 
 This Python script connects to an MCU via serial communication, reads accelerometer data sent by the `SendAcceleration` Arduino sketch, saves it to CSV files and plots a graph of the recorded accelerations. It provides an easy-to-use CLI with the ability to use keystrokes to label incoming datasets.
 
+## Screenshot of the CLI
+
+![CLI](screenshot/data_collector_CLI.png)
+
 ## Dependencies
 
 - Python 3.11
