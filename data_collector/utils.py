@@ -105,7 +105,7 @@ def connect_to_arduino():
         return None
 
 
-def collect_and_hash_data(root_dir, output_dir):
+def collect_and_flatten(root_dir, output_dir):
     """
     Iterates through folders, calculates MD5 hashes, and collects unique
     files into a categorized output directory with ascending filenames.
