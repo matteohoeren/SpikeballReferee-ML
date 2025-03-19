@@ -21,6 +21,7 @@ PLAY_SOUNDS = False
 
 
 input_index = ""
+last_label = "net"
 suspend_keyboard_listener = False
 
 def on_press(key):
@@ -172,7 +173,7 @@ def read_serial(ser):
             try:
                 lineArray = [int(element) for element in lineArray]
             except ValueError:
-                print("An element in lineArray could not be parsed to an integer.")
+                print("An element in lineArray could not be parsed to an integer. IMU might be in calibrating.")
             if len(lineArray) == 4:
                 serial_data_queue.append(lineArray)
                 evaluate_data_line(lineArray)

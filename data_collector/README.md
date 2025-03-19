@@ -1,6 +1,6 @@
 # Data collector
 
-This Python script connects to an MCU via serial communication, reads accelerometer data sent by the `SendAcceleration` Arduino sketch, and saves it to CSV files. It provides an easy-to-use CLI with the ability to use keystrokes to label incoming datasets.
+This Python script connects to an MCU via serial communication, reads accelerometer data sent by the `SendAcceleration` Arduino sketch, saves it to CSV files and plots a graph of the recorded accelerations. It provides an easy-to-use CLI with the ability to use keystrokes to label incoming datasets.
 
 ## Dependencies
 
@@ -28,4 +28,5 @@ This Python script connects to an MCU via serial communication, reads accelerome
 ## Notes & Future development
 
 - I created this code iteratively, and so this codebase grew onto what it is now. I am aware that this code is neither organized nor modular. This should be fixed, however i see little point in doing that.
+- The graph plotting opening a new browser tab each time is not a clean solution, it should be reworked or disabled.
 - It might be more user-friendly to migrate the sampling logic to the MCU and send the data via BLE. With that architecture, no long cable would be needed and one could use a WebApp for the data recording part. On the negative side, BLE would take ~30ms to transmit, which could make recording datasamples while transmitting a challenge.
