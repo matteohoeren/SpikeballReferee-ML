@@ -21,7 +21,7 @@ This Python script connects to an MCU via serial communication, reads accelerome
 
 1.  Run the script: `python main.py`. It should detect the Arduino Nano 33 automatically, otherwise it will ask you for which device to connect.
 2.  The script will allow you to enter the type of hit (r → "rim",n → "net",u → "rollup" or d → "discard") for each data recording. When no keystroke is received, the script will always assume net.
-3.  The collected data will be saved to CSV files in the `rawdata` directory under the corresponding subdirectories.
+3.  The collected data will be saved to CSV files in the `recorded_data` directory under the corresponding subdirectories.
 4.  Once done with a recording session, hit CRTL+C multiple times to exit the script. It will save the recording state and you simply continue by starting the script again.
 5.  When recording a new session, you'll want to rename the existing `recorded_data` folder before starting the script again.
 
