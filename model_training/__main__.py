@@ -20,7 +20,7 @@ def main():
     print("X_train dtype:", X_train.dtype)
     print("X_test dtype:", X_test.dtype)
     print("X_valid dtype:", X_valid.dtype)
-    train_model(X_train, Y_train, X_test, Y_test)
+    train_model(X_train, Y_train, X_test, Y_test, X_valid, Y_valid)
     
 
 if __name__ == "__main__":

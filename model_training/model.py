@@ -2,11 +2,27 @@ import tensorflow as tf
 import numpy as np
 
 from tensorflow.keras.utils import plot_model
-
+from tensorflow.keras.callbacks import ReduceLROnPlateau, EarlyStopping
 
 
 VERBOSE_OUTPUT = False
 SAVE_AS_TFLITE = False
+
+
+reduce_lr = ReduceLROnPlateau(
+    monitor='val_loss',
+    factor=0.2,
+    patience=5,
+    min_lr=1e-6,
+    verbose=1
+)
+
+early_stopping = EarlyStopping(
+    monitor='val_loss',
+    patience=15,
+    restore_best_weights=True,
+    verbose=1
+)
 
 
 def create_cnn_model():
@@ -43,6 +59,24 @@ def create_cnn_model():
 
 #     return model
 
+def normalize_data(X_train, X_test, X_valid=None):
+    # Calculate min and max values from training data only
+    min_vals = X_train.min(axis=(0, 1))
+    max_vals = X_train.max(axis=(0, 1))
+    
+    # Scale to [-1, 1] range
+    X_train_normalized = 2 * (X_train - min_vals) / (max_vals - min_vals) - 1
+    X_test_normalized = 2 * (X_test - min_vals) / (max_vals - min_vals) - 1
+    
+    if X_valid is not None:
+        X_valid_normalized = 2 * (X_valid - min_vals) / (max_vals - min_vals) - 1
+        return X_train_normalized, X_test_normalized, X_valid_normalized
+    
+    return X_train_normalized, X_test_normalized
+
+
+
+
 def evaluate_model(model, X_test, Y_test):
     # Evaluate the model on the test set
     loss, accuracy = model.evaluate(X_test, Y_test)
@@ -62,25 +96,19 @@ def plot_cnn_model(model):
     show_layer_activations=True
 )
 
-def train_model(X_train, Y_train, X_test, Y_test):
+def train_model(X_train, Y_train, X_test, Y_test, X_valid, Y_valid):
     model = create_cnn_model()
     model.summary()
     plot_cnn_model(model)
     model.compile(optimizer='adam',
               loss='sparse_categorical_crossentropy',
               metrics=['accuracy'])
-    # somewhere between 16 and 32 batch size was best
-    # print(type(X_train))
-    # print(type(Y_train))
-    # print(type(X_test))
-    # print(type(Y_test))
 
-    # X_train = np.array(X_train, dtype=np.float32)
-    # Y_train = np.array(Y_train, dtype=np.float32)
-    # X_test = np.array(X_test, dtype=np.float32)
-    # Y_test = np.array(Y_test, dtype=np.float32)
 
-    model.fit(X_train, Y_train, epochs=100, batch_size=20, validation_data=(X_test, Y_test))   
+    X_train_norm, X_test_norm, X_valid_norm = normalize_data(X_train, X_test, X_valid)
+    print(f"Normalized train range: [{X_train_norm.min():.4f}, {X_train_norm.max():.4f}]")
+    #model.fit(X_train, Y_train, epochs=100, batch_size=20, validation_data=(X_test, Y_test))   
+    model.fit(X_train_norm, Y_train, epochs=100, batch_size=20, validation_data=(X_test_norm, Y_test),callbacks=[reduce_lr, early_stopping])   
     np.set_printoptions(precision=2, suppress=True)
 
     correct_pred = 0
@@ -113,7 +141,7 @@ def train_model(X_train, Y_train, X_test, Y_test):
     print(f"Correctly predicted samples: {correct_pred/len(X_test)*100}% of sample size: {len(X_test)}")       
 
     
-    evaluate_model(model, X_test, Y_test)
+    evaluate_model(model, X_test_norm, Y_test)
 
     if SAVE_AS_TFLITE:
         converter = tf.lite.TFLiteConverter.from_keras_model(model)

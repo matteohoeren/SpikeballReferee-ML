@@ -57,7 +57,7 @@ def load_data(root_folder):
 
 
 def split_data(X, Y):
-    X_train, X_temp, Y_train, Y_temp = train_test_split(X, Y, test_size=0.1, random_state=42)
+    X_train, X_temp, Y_train, Y_temp = train_test_split(X, Y, test_size=0.2, random_state=42)
     X_test, X_valid, Y_test, Y_valid = train_test_split(X_temp, Y_temp, test_size=0.05, random_state=42)
     return X_train, Y_train, X_test, Y_test, X_valid, Y_valid
 
