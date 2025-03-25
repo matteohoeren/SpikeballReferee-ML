@@ -142,7 +142,7 @@ def calc_long_ma(data):
             sum += (abs(data[i][1]) + abs(data[i][2]) + abs(data[i][3]) / 3)
         sum = sum / len(data)
         if sum > TRIGGER_VALUE:
-            return sum + 200
+            return sum + 400
         else:
             return TRIGGER_VALUE
         
@@ -244,11 +244,9 @@ def end_early(line):
     z = int(line[3])
 
     if(len(moving_average_temp) > 0):
-        exceed_long_ma = above_trigger(x,y,z, moving_average_temp[-1]+5000)
-        if exceed_long_ma and time_elapsed > 300:
-            #print("Second hit detected outside 300ms range. Stopping recording.")
-            #print("Exceeded " + str(moving_average_temp[-1]) + "at time interval " + str(time_elapsed) + "ms")
-            return False
+        exceed_long_ma = above_trigger(x,y,z, moving_average_temp[-1]+4000)
+        if exceed_long_ma and time_elapsed > 150:
+            return True
     return False
 
 
