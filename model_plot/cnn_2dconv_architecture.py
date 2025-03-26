@@ -12,7 +12,7 @@ arch = [
     to_Conv("input", s_filer=210, n_filer=3, offset="(0,0,0)", to="(0,0,0)",
             width=1, height=21, depth=1.5, caption="Input\\ (210x3)"),
 
-    # Reshape Layer - Geometric manipulation only
+    # Reshape Layer
     to_Conv("reshape", s_filer=210, n_filer=3, offset="(3,0,0)", to="(input-east)",
             width=1, height=21, depth=2, caption="Reshape\\ (210x3x1)"),  # Smaller block
     to_connection("input", "reshape"),
@@ -71,7 +71,7 @@ arch = [
 ]
 
 def main():
-    namefile = "cnn_architecture_2d"
+    namefile = "cnn_2dconv_architecture"
     to_generate(arch, namefile + '.tex')
 
 if __name__ == '__main__':
