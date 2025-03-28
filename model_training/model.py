@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 
 from tensorflow.keras.utils import plot_model
 from tensorflow.keras.callbacks import ReduceLROnPlateau, EarlyStopping
+from sklearn.utils.class_weight import compute_class_weight
 
 from tensorflow.keras.layers import Conv2D, MaxPooling2D, Dropout, Flatten, Dense, BatchNormalization, Input, Reshape
 from tensorflow.keras.regularizers import l1_l2
@@ -141,7 +142,7 @@ def plot_history(history):
         legend=dict(
             orientation="h",
             yanchor="bottom",
-            y=-0.2,  # Adjust this value to fine-tune the position
+            y=-0.2, 
             xanchor="center",
             x=0.5
         )
@@ -166,13 +167,33 @@ def plot_cnn_model(model):
     expand_nested=False,
     layer_range=None,
     show_layer_activations=True
+
+    
 )
+
+def get_class_weights(Y_train):
+    classes = np.unique(Y_train)
+    if len(classes) != 2:
+            print(f"Warnung: Erwartet wurden 2 Klassen, gefunden wurden {len(classes)}: {classes}")
+            # Setzen Sie Standardgewichte oder behandeln Sie den Fall entsprechend
+            class_weight_dict = None
+    else:
+        # Berechnen Sie die 'balanced' Gewichte mit scikit-learn
+        weights = compute_class_weight(class_weight='balanced',
+                                        classes=classes,
+                                        y=Y_train)
+        # Erstellen Sie das Dictionary, das Keras erwartet
+        class_weight_dict = dict(zip(classes, weights))
+        print(f"Verwendete Klassengewichte: {class_weight_dict}")
+    return class_weight_dict
 
 def train_model(X_train, Y_train, X_test, Y_test, X_valid, Y_valid):
     print(X_train.shape)
     model = create_2dconv_cnn_model()
     model.summary()
-    plot_cnn_model(model)
+    #plot_cnn_model(model)
+    class_weight_dict = get_class_weights(Y_train)
+    
     model.compile(optimizer='adam',
               loss='sparse_categorical_crossentropy',
               metrics=['accuracy'])
@@ -180,7 +201,10 @@ def train_model(X_train, Y_train, X_test, Y_test, X_valid, Y_valid):
 
     X_train_norm, X_test_norm, X_valid_norm = normalize_data(X_train, X_test, X_valid)
     print(f"Normalized train range: [{X_train_norm.min():.4f}, {X_train_norm.max():.4f}]")
-    history = model.fit(X_train_norm, Y_train, epochs=200, batch_size=20, validation_data=(X_test_norm, Y_test),callbacks=[reduce_lr, early_stopping])   #,callbacks=[reduce_lr, early_stopping]
+    history = model.fit(X_train_norm, Y_train, epochs=200, batch_size=20,
+                         validation_data=(X_test_norm, Y_test),
+                         class_weight=class_weight_dict,
+                         callbacks=[reduce_lr, early_stopping])   #,callbacks=[reduce_lr, early_stopping]
     np.set_printoptions(precision=2, suppress=True)
 
     correct_pred = 0
@@ -188,7 +212,6 @@ def train_model(X_train, Y_train, X_test, Y_test, X_valid, Y_valid):
     for sample_num in range(len(X_valid_norm)):
         single_sample = np.expand_dims(X_valid_norm[sample_num], axis=0)  # Add batch dimension
         single_sample = np.expand_dims(single_sample, axis=-1)  # Add channel dimension
-        #print(single_sample)
         result = model.predict(single_sample, verbose=0)
         predicted_label = np.argmax(result[0])
         true_label = Y_valid[sample_num]
