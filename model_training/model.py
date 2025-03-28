@@ -149,11 +149,11 @@ def plot_history(history):
 
     fig.show()
 
-def evaluate_model(model, X_validation, Y_validation):
+def evaluate_model(model, X_test, Y_test):
     # Evaluate the model on the validation set
-    loss, accuracy = model.evaluate( X_validation, Y_validation)
-    print("Validation Loss:", loss)
-    print("Validation Accuracy:", accuracy)
+    loss, accuracy = model.evaluate( X_test, Y_test)
+    print("Test Loss:", loss)
+    print("Test Accuracy:", accuracy)
 
 def plot_cnn_model(model):
    plot_model(
