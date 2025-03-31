@@ -57,7 +57,7 @@ def load_data(root_folder):
 
 def split_data(X, Y):
     X_train, X_temp, Y_train, Y_temp = train_test_split(X, Y, test_size=0.2, random_state=42)
-    X_valid, X_test, Y_valid, Y_test = train_test_split(X_temp, Y_temp, test_size=0.15, random_state=42)
+    X_valid, X_test, Y_valid, Y_test = train_test_split(X_temp, Y_temp, test_size=0.4, random_state=42)
     return X_train, Y_train, X_valid, Y_valid, X_test, Y_test
 
 def remove_non_numeric_rows(data):
