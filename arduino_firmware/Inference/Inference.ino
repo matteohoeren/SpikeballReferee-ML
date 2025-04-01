@@ -19,6 +19,7 @@
 #include <tensorflow/lite/schema/schema_generated.h>
 #include <ArduinoBLE.h>
 #include <avr/dtostrf.h>
+#include <math.h>
 #include "model.h"
 
 const int ledPin = LED_BUILTIN; // set ledPin to on-board LED
@@ -27,6 +28,9 @@ const int buttonPin = 4; // set buttonPin to digital pin 4
 const float accelerationThreshold = 1000.0;
 const int numSamples = 210;
 const int numChannels = 3;
+
+const float train_min_vals[3] = { -8049.000000f, -8083.000000f, -8946.000000f };
+const float train_max_vals[3] = { 8059.000000f, 9005.000000f, 9017.000000f };
 
 const char* deviceServiceUuid = "19B10010-E8F2-537E-4F6C-D104768A1214";
 const char* deviceCharacteristicUuid = "19B10011-E8F2-537E-4F6C-D104768A1214";
@@ -93,8 +97,8 @@ void setup() {
   Serial.print(" Y: "); Serial.print(CALIBRATION_Y);
   Serial.print(" Z: "); Serial.println(CALIBRATION_Z);
 
-  // Initialize TensorFlow
-  tflModel = tflite::GetModel(model_tflite);
+  // Initialize TensorFlow: Pass the name of the char array from the model.h file
+  tflModel = tflite::GetModel(spikeball_tflite);
   if (tflModel->version() != TFLITE_SCHEMA_VERSION) {
     Serial.println("[ERROR] Model schema mismatch!");
     while (1);
@@ -159,11 +163,61 @@ void lightUpRed(){
   digitalWrite(LEDR, HIGH);
 }
 
+void normalizeInputData(TfLiteTensor* inputTensor) {
+  if (!inputTensor || inputTensor->type != kTfLiteFloat32) {
+    Serial.println("[ERROR] Invalid input tensor for normalization!");
+    return;
+  }
+
+  float* inputData = inputTensor->data.f;
+  // Calculate total elements based on tensor dimensions for robustness
+  // Assumes input shape is [1, numSamples, numChannels] or similar flattened representation
+  int numElements = 1;
+  for (int i = 0; i < inputTensor->dims->size; ++i) {
+     numElements *= inputTensor->dims->data[i];
+  }
+
+  if (numElements != numSamples * numChannels) {
+     Serial.print("[WARNING] Unexpected number of elements in input tensor: ");
+     Serial.print(numElements);
+     Serial.print(" Expected: ");
+     Serial.println(numSamples * numChannels);
+     // Might still work if flattening is consistent, but indicates potential config mismatch
+  }
+
+  Serial.println("[DEBUG] Normalizing input data...");
+
+  for (int i = 0; i < numSamples; ++i) {
+    for (int j = 0; j < numChannels; ++j) {
+      int index = i * numChannels + j;
+
+      // Ensure index is within bounds (safety check)
+      if (index >= numElements) {
+          Serial.print("[ERROR] Normalization index out of bounds: "); Serial.println(index);
+          continue; // Skip this element
+      }
+
+      float minVal = train_min_vals[j]; // Get min for current channel (X, Y, or Z)
+      float maxVal = train_max_vals[j]; // Get max for current channel
+      float range = maxVal - minVal;
+      float currentValue = inputData[index];
+
+      // Avoid division by zero if min == max for a channel
+      if (fabs(range) < 1e-6f) { // Use float epsilon comparison
+          inputData[index] = 0.0f; // Assign a neutral value
+      } else {
+          // Apply the formula: 2 * (X - min) / (max - min) - 1
+          inputData[index] = 2.0f * (currentValue - minVal) / range - 1.0f;
+      }
+    }
+  }
+  Serial.println("[DEBUG] Normalization complete.");
+}
+
 void loop() {
   float aX, aY, aZ;
   float deltaX, deltaY, deltaZ;
 
-  // wait for significant motion
   while (samplesRead == numSamples) {
     BLE.poll();
     if (IMU.accelerationAvailable()) {
@@ -198,23 +252,13 @@ void loop() {
       tflInputTensor->data.f[idx + 1] = deltaY;
       tflInputTensor->data.f[idx + 2] = deltaZ;
 
-      // // Print every 20th sample for debugging
-      // if (samplesRead % 20 == 0) {
-      //   Serial.print("[DEBUG] Sample ");
-      //   Serial.print(samplesRead);
-      //   Serial.print(" x=");
-      //   Serial.print(tflInputTensor->data.f[idx + 0]);
-      //   Serial.print(" y=");
-      //   Serial.print(tflInputTensor->data.f[idx + 1]);
-      //   Serial.print(" z=");
-      //   Serial.println(tflInputTensor->data.f[idx + 2]);
-      // }
 
       samplesRead++;
 
       if (samplesRead == numSamples) {
-        //Serial.println("[DEBUG] Data collection complete. Running inference...");
-        
+        normalizeInputData(tflInputTensor); 
+
+
         TfLiteStatus invokeStatus = tflInterpreter->Invoke();
         if (invokeStatus != kTfLiteOk) {
           Serial.println("[ERROR] Invoke failed!");
