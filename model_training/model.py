@@ -15,7 +15,7 @@ from plotly.subplots import make_subplots
 
 
 VERBOSE_OUTPUT = False
-SAVE_AS_TFLITE = False
+SAVE_AS_TFLITE = True
 USE_END_EARLY_REDUCE_LR = True
 
 
