@@ -13,6 +13,8 @@ def load_data(root_folder):
     Y = []
     ignored_files = 0
     problematic_files = []
+    count_net = 0
+    count_rim = 0
 
     # Process both NET and RIM categories directly in root folder
     for category_folder, label in [("net", 1), ("rim", 0)]:
@@ -45,12 +47,19 @@ def load_data(root_folder):
                 X.append(df.iloc[:, 1:].values)
                 Y.append(label)
 
+                if label == 1:
+                    count_net += 1
+                else:
+                    count_rim += 1
+
             except Exception as e:
                 print(f"Error processing {file_path}: {str(e)}")
                 problematic_files.append(file_path)
 
     print(f"Ignored {ignored_files} files with insufficient rows")
     print(f"Found {len(problematic_files)} problematic files")
+    print(f"Successfully loaded NET samples: {count_net} ({count_net / (count_net + count_rim) * 100:.2f}%)")
+    print(f"Successfully loaded RIM samples: {count_rim} ({count_rim / (count_net + count_rim) * 100:.2f}%)")
     
     return np.array(X), np.array(Y)
 

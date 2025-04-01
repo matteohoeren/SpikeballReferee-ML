@@ -244,11 +244,11 @@ def plot_history(history):
 
     # Add accuracy traces
     fig.add_trace(go.Scatter(x=epochs, y=acc, mode='lines', name='Training Accuracy', marker=dict(color='blue', line=dict(width=4))))
-    fig.add_trace(go.Scatter(x=epochs, y=val_acc, mode='lines', name='Test Accuracy', marker=dict(color='darkgreen', line=dict(width=4))))
+    fig.add_trace(go.Scatter(x=epochs, y=val_acc, mode='lines', name='Validation Accuracy', marker=dict(color='darkgreen', line=dict(width=4))))
 
     # Add loss traces
     fig.add_trace(go.Scatter(x=epochs, y=loss, mode='lines', name='Training Loss', marker=dict(color='red', line=dict(width=2))))
-    fig.add_trace(go.Scatter(x=epochs, y=val_loss, mode='lines', name='Test Loss', marker=dict(color='purple', line=dict(width=2))))
+    fig.add_trace(go.Scatter(x=epochs, y=val_loss, mode='lines', name='Validation Loss', marker=dict(color='purple', line=dict(width=2))))
 
     # Update layout
     fig.update_layout(
@@ -298,7 +298,7 @@ def get_class_weights(Y_train):
                                         classes=classes,
                                         y=Y_train)
 
-        class_weight_dict = {classes[0]: weights[1], classes[1]: weights[0]}
+        class_weight_dict = {classes[0]: weights[0], classes[1]: weights[1]}
         print(f"Verwendete Klassengewichte: {class_weight_dict}")
     return class_weight_dict
 
@@ -314,6 +314,7 @@ def train_model(X_train, Y_train, X_test, Y_test, X_valid, Y_valid):
     """
     print("--- Creating Model ---")
     model = create_2dconv_cnn_model()
+    #model = create_1dconv_cnn_model()
 
     print()
     print("--- Building Model ---")
@@ -369,10 +370,12 @@ def train_model(X_train, Y_train, X_test, Y_test, X_valid, Y_valid):
          print(f"\nERROR during batch prediction on test set: {e}")
          print("Check if model is built and X_test_norm has correct shape.")
          return 
+    
+    #plot_history(history)
 
     class_labels = ['Rand', 'Netz']
-    plot_confusion_matrix(model, X_test_norm, Y_test, class_labels, title='Confusion Matrix (Test Set)', normalize=None)
-    plot_confusion_matrix(model, X_test_norm, Y_test, class_labels, title='CM Normalisiert (Recall) (Test Set)', normalize='true')
+    #plot_confusion_matrix(model, X_test_norm, Y_test, class_labels, title='Confusion Matrix (Test Set)', normalize=None)
+    plot_confusion_matrix(model, X_test_norm, Y_test, class_labels, title='Confusion Matrix (Test Set)', normalize='true')
 
 
     print("Running model.evaluate on test set...")
