@@ -360,6 +360,20 @@ def train_model(X_train, Y_train, X_test, Y_test, X_valid, Y_valid):
     
     print("--- Training Finished ---")
 
+
+    # print("\n--- Inspecting Keras Model Raw Probabilities ---")
+    # y_pred_proba_test_keras = model.predict(X_test_norm)
+    # print("Sample Keras Probabilities (first 10):")
+    # # Use precision to see if they are already very close to 0/1
+    # np.set_printoptions(precision=8, suppress=True)
+    # print(y_pred_proba_test_keras[:10])
+    # np.set_printoptions() # Reset to default
+
+    # # Check how many predictions are *very* close to 1 or 0
+    # extreme_preds = np.sum((y_pred_proba_test_keras > 0.999) | (y_pred_proba_test_keras < 0.001))
+    # print(f"Number of probability values > 0.999 or < 0.001: {extreme_preds} out of {y_pred_proba_test_keras.size}")
+    # print("--- End Keras Probability Inspection ---")
+
     print()
     print("--- Evaluating Model on TEST Set ---")
     try:
@@ -374,8 +388,8 @@ def train_model(X_train, Y_train, X_test, Y_test, X_valid, Y_valid):
     #plot_history(history)
 
     class_labels = ['Rand', 'Netz']
-    #plot_confusion_matrix(model, X_test_norm, Y_test, class_labels, title='Confusion Matrix (Test Set)', normalize=None)
-    plot_confusion_matrix(model, X_test_norm, Y_test, class_labels, title='Confusion Matrix (Test Set)', normalize='true')
+    plot_confusion_matrix(model, X_test_norm, Y_test, class_labels, title='Confusion Matrix (Test Set)', normalize=None)
+    #plot_confusion_matrix(model, X_test_norm, Y_test, class_labels, title='Confusion Matrix (Test Set)', normalize='true')
 
 
     print("Running model.evaluate on test set...")
